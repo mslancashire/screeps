@@ -1,2 +1,3 @@
 # screeps
-Playing with Screeps
+
+Refreshing JS knowledge.
