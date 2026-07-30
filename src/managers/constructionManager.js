@@ -1,93 +1,56 @@
-/** @type {Record<string, number>} */
-const EXTENSION_LIMITS = {
-    1: 0,
-    2: 5,
-    3: 10,
-    4: 20,
-    5: 30,
-    6: 40,
-    7: 50,
-    8: 60
-};
+import buildingRegistry from "../construction";
 
 /**
  * @param {Room} room
  */
 export function runConstructionManager(room) {
+    
     // Save on CPU
     if (Game.time % 20 !== 0) return;
 
-    const controller = room.controller;
-    if (!controller || !controller.my) return;
+    // Throttle builds
+    const activeSites = room.find(FIND_MY_CONSTRUCTION_SITES).length;
+    if (activeSites >= 3) return;
 
-    // 1. Determine how many extensions
-    const rcl = controller.level;
-    const maxAllowed = EXTENSION_LIMITS[rcl] || 0;
-    if (maxAllowed === 0) return;
-
-    // 2. Count existing extensions + active blueprints
-    const existingCount = room.find(FIND_MY_STRUCTURES, {
-        filter: { structureType: STRUCTURE_EXTENSION }
-    }).length;
-
-    const blueprintCount = room.find(FIND_MY_CONSTRUCTION_SITES, {
-        filter: { structureType: STRUCTURE_EXTENSION }
-    }).length;
-
-    const currentTotal = existingCount + blueprintCount;
-
-    // 3. Create blueprint if needed
-    if (currentTotal < maxAllowed) {
-
-        const spawn = room.find(FIND_MY_SPAWNS)[0];
-        if (!spawn) return;
+    for (const plan of buildingRegistry) {
         
-        const position = findValidExtensionSpot(room, spawn.pos);
+        if (plan.isRoomReady && !plan.isRoomReady(room)) {
+            continue;
+        }
+        
+        const targets = plan.getTargetPositions(room);
 
-        if (position) {
-            const result = room.createConstructionSite(position.x, position.y, STRUCTURE_EXTENSION);
-            if (result === OK) {
-                console.log(`🚧 Automated Construction: Placed extension blueprint at [${position.x}, ${position.y}]`);
+        for (const targetPosition of targets) {
+            if (canPlaceBlueprintAt(room, targetPosition, plan.structureType)) {
+                const result = room.createConstructionSite(targetPosition.x, targetPosition.y, plan.structureType);
+                if (result === OK) {
+                    console.log(`🚧 Automated Construction: Placed ${plan.structureType} blueprint at [${targetPosition.x}, ${targetPosition.y}]`);
+                    return; // only place one, to save CPU load
+                }
             }
-        } else {
-            console.log('No position for blueprint...');
         }
     }
 }
 
 /**
+ * Validation check to verify if a coordinate can receive this specific blueprint
  * @param {Room} room
- * @param {RoomPosition} centerPos
+ * @param {RoomPosition} pos
+ * @param {string} structureType
  */
-function findValidExtensionSpot(room, centerPos) {
-    // Outward spread of 5 tiles
-    for (let distance = 2; distance <= 5; distance++) {
-        for (let dx = -distance; dx <= distance; dx++) {
-            for (let dy = -distance; dy <= distance; dy++) {
-                // Use even check to create a chequerboard grid to allow for walking paths for creeps
-                if ((Math.abs(dx) + Math.abs(dy)) % 2 !== 0) continue;
+function canPlaceBlueprintAt(room, pos, structureType) {
+    const objects = room.lookAt(pos.x, pos.y);
 
-                const targetX = centerPos.x + dx;
-                const targetY = centerPos.y + dy;
-
-                // Check against room boundary (room 0-49)
-                if (targetX < 2 || targetX > 47 || targetY < 2 || targetY > 47) continue;
-
-                // Check what's occupying tile
-                const objects = room.lookAt(targetX, targetY);
-                let isBlocked = false;
-
-                for (const obj of objects) {
-                    if (obj.type === 'terrain' && obj.terrain === 'wall') isBlocked = true;
-                    if (obj.type === 'structure') isBlocked = true;
-                    if (obj.type === 'constructionSite') isBlocked = true;
-                }
-
-                if (!isBlocked) {
-                    return new RoomPosition(targetX, targetY, room.name);
-                }
-            }
+    for (const obj of objects) {
+        if (obj.type === 'terrain' && obj.terrain === 'wall') return false;
+        if (obj.type === 'constructionSite') return false;
+        if (obj.type === 'structure' && obj['structure']) {
+            // If the exact structure is already standing there, we don't need a blueprint
+            if (obj.structure.structureType === structureType) return false;
+            
+            // Roads can overlap with other structures, but extensions/towers cannot
+            if (structureType !== STRUCTURE_ROAD) return false;
         }
     }
-    return null;
+    return true;
 }
