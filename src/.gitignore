@@ -1,0 +1,22 @@
+# --- Node.js & Dependencies ---
+# Never commit third-party packages downloaded by npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Build Outputs ---
+# Exclude your local compilation directory (Screeps runs from your source, not your dist)
+dist/
+
+# --- Environment & Credentials ---
+# In case you use automated deployment secrets or local API tokens later
+.env
+.env.local
+.screeps.json
+
+# --- Editor & OS Templates ---
+# VS Code local workspace history and cache files
+.vscode/
+.DS_Store
+Thumbs.db
