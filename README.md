@@ -61,7 +61,7 @@ Refreshing JS knowledge by coding in screeps.
 
 ### Rollup
 
-Rollback has been installed and configured.
+Rollup has been installed and configured.
 
 `rollup.config.mjs`
 
