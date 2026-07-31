@@ -8,3 +8,7 @@ interface IConstructionPlanner {
     isRoomReady?(room: Room): boolean; // ? => optional, return true by default
     getTargetPositions(room: Room): RoomPosition[];
 }
+
+interface ICreepRole {
+    run(creep: Creep);
+}

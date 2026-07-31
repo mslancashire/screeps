@@ -18,17 +18,14 @@ class TowersPlanner extends BasePlanner {
     }
     
     /**
-     * Tactical Pre-Condition Gate
+     * Checks if room has a controller and its level is equal to or greater than 3.
      * @param {Room} room
      * @returns {boolean}
      */
     isRoomReady(room) {        
-        const hostiles = room.find(FIND_HOSTILE_CREEPS);
-        if (hostiles.length > 0) {
-            return false;
-        }
-        
-        return true;
+        if (!room.controller) return false;
+
+        return room.controller.level >= 3;
     }
 }
 

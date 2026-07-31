@@ -1,10 +1,7 @@
 import BasePlanner from './BasePlanner.js';
 
-const pathingOptions = {
-    ignoreCreeps: true,
-    swampCost: 1,
-    plainCost: 1
-};
+
+
 class RoadsPlanner extends BasePlanner {
     constructor() {
         super(STRUCTURE_ROAD, 0, {});
@@ -16,43 +13,62 @@ class RoadsPlanner extends BasePlanner {
      * @returns {RoomPosition[]}
      */
     getTargetPositions(room) {
-        const spawns = room.find(FIND_MY_SPAWNS);
-        if (spawns.length === 0) return [];
+        const [mainSpawn] = room.find(FIND_MY_SPAWNS);
+        if (!mainSpawn) return [];
 
-        const mainSpawn = spawns[0];
         const controller = room.controller;
         const sources = room.find(FIND_SOURCES);
 
-        const positions = [];
+        /**
+         * @type {RoomPosition[]}
+         */
+        let rawPositions = [];
+
+        const pathingOptions = {
+            swampCost: 1,
+            plainCost: 1,
+            roomCallback: (/** @type {string} */ roomName) => {
+                if (roomName !== room.name) return false;
+                const costs = new PathFinder.CostMatrix();
+                for (const src of sources) {
+                    costs.set(src.pos.x, src.pos.y, 255);
+                }
+                return costs;
+            }
+        };
+
+        // helper for finding a safe path
+        const getSafePath = (/** @type {RoomPosition} */ start, /** @type {any} */ end) => {
+            const searchResult = PathFinder.search(start, { pos: end, range: 1 }, pathingOptions);
+            return searchResult.path;
+        }
 
         // 1. Highway: Spawn to every Energy source
         for (const source of sources) {
-            const pathToSource = mainSpawn.pos.findPathTo(source.pos, pathingOptions);
+            rawPositions = [...rawPositions, ...getSafePath(mainSpawn.pos, source.pos)];
+        }
 
-            for (const step of pathToSource) {
-                positions.push(new RoomPosition(step.x, step.y, room.name));
+        if (controller) {
+            // 2. Highway: Sources to Room Controller
+            for (const source of sources) {
+                rawPositions = [...rawPositions, ...getSafePath(source.pos, controller.pos)]
             }
+
+            // 3. Highway: Spawn to Room Controller
+            rawPositions = [...rawPositions, ...getSafePath(mainSpawn.pos, controller.pos)];
         }
 
-        if (!controller) {
-            return positions;
-        }
+        const uniquePositions = rawPositions.filter((pos, index, self) =>
+            self.findIndex(p => p.x === pos.x && p.y === pos.y) === index);
 
-        // 2. Highway: Spawn to Room Controller
-        const pathToController = mainSpawn.pos.findPathTo(controller.pos, pathingOptions);
-        for (const step of pathToController) {
-            positions.push(new RoomPosition(step.x, step.y, room.name));
-        }
+        const unbuiltPositions = uniquePositions.filter(pos => {
+            const existingStructures = room.lookForAt(LOOK_STRUCTURES, pos.x, pos.y);
+            const existingBlueprints = room.lookForAt(LOOK_CONSTRUCTION_SITES, pos.x, pos.y);
+            const hasRoad = existingStructures.some(s => s.structureType === STRUCTURE_ROAD);
+            return !hasRoad && existingBlueprints.length === 0;
+        });
 
-        // 3. Highway: Sources to Room Controller
-        for (const source of sources) {
-            const pathToSource = source.pos.findPathTo(controller.pos, pathingOptions);
-            for (const step of pathToSource) {
-                positions.push(new RoomPosition(step.x, step.y, room.name));
-            }
-        }
-
-        return positions;
+        return unbuiltPositions;
     }
 }
 

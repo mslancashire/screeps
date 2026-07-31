@@ -5,8 +5,8 @@ export function runSpawnManager() {
     // 1. Spawn population targets
     /** @type {Record<string, number>} */
     const populationTargets = {
-        harvester: 2,
-        upgrader: 3,
+        harvester: 4,
+        upgrader: 2,
         builder: 2
     };
 

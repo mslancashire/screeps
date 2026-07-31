@@ -24,6 +24,7 @@
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@types/lodash": "^4.17.24",
     "@types/screeps": "^3.4.0",
+    "dotenv": "^17.4.2",
     "rollup": "^4.62.3",
     "rollup-plugin-clear": "^2.0.7"
   }

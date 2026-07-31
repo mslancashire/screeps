@@ -3,8 +3,8 @@ import towers from './build.towers';
 import roads from './build.roads';
 
 const buildingRegistry = [
-    extensions,
     towers,
+    extensions,    
     roads
 ];
 

@@ -62,17 +62,18 @@ export default class BasePlanner {
                     // Check against room boundary (room 0-49)
                     if (targetX < 2 || targetX > 47 || targetY < 2 || targetY > 47) continue;
 
-                    // Check what's occupying tile
-                    const objects = room.lookAt(targetX, targetY);
-                    let isBlocked = false;
+                    // ignore walls
+                    const terrain = room.getTerrain();
+                    if (terrain.get(targetX, targetY) === TERRAIN_MASK_WALL) continue;
+                    
+                    // ignore structures and construction sites
+                    const structures = room.lookForAt(LOOK_STRUCTURES, targetX, targetY);
+                    const sites = room.lookForAt(LOOK_CONSTRUCTION_SITES, targetX, targetY);
 
-                    for (const obj of objects) {
-                        if (obj.type === 'terrain' && obj.terrain === 'wall') isBlocked = true;
-                        if (obj.type === 'structure') isBlocked = true;
-                        if (obj.type === 'constructionSite') isBlocked = true;
-                    }
+                    const hasSolidBlocker = structures.some(s => s.structureType !== STRUCTURE_ROAD);
+                    const hasSolidSite = sites.some(s => s.structureType !== STRUCTURE_ROAD);
 
-                    if (!isBlocked) {
+                    if (!hasSolidBlocker && !hasSolidSite) {
                         return new RoomPosition(targetX, targetY, room.name);
                     }
                 }

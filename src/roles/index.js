@@ -8,5 +8,5 @@ const roles = {
     builder
 };
 
-/** @type {Record<string, { run: (creep: Creep) => void }>} */
+/** @type {Record<string, ICreepRole>}>} */
 export default roles;
