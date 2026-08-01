@@ -1,11 +1,13 @@
-import extensions from './build.extensions';
-import towers from './build.towers';
-import roads from './build.roads';
+import planExtensions from './build.extensions';
+import planTowers from './build.towers';
+import planRoads from './build.roads';
+import planSourceContainers from './build.source-containers'
 
 const buildingRegistry = [
-    towers,
-    extensions,    
-    roads
+    planTowers,
+    planExtensions,
+    planSourceContainers,
+    planRoads
 ];
 
 /** @type {IConstructionPlanner[]} */

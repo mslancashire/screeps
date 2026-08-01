@@ -1,6 +1,7 @@
+import { resourcePipeline } from '../utils/resourcePipeline';
 import BaseRole from './BaseRole';
 
-class UpgraderRole extends BaseRole {
+export class UpgraderRole extends BaseRole {
 
     constructor() {
         super(
@@ -15,6 +16,18 @@ class UpgraderRole extends BaseRole {
      */
     onWorkState(creep) {
         this.onWorkFallback(creep);
+    }
+
+    /**
+     * @returns {import("../utils/resourcePipeline").EnergyFetcher<any>[]}
+     */
+    getGatheringTiers() {
+        return [
+            resourcePipeline.tiers.graveRobber,
+            resourcePipeline.tiers.sweeper,
+            resourcePipeline.tiers.collector,
+            resourcePipeline.tiers.miner,
+        ];
     }
 };
 

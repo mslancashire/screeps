@@ -12,7 +12,7 @@ const EXTENSION_LIMITS = {
     8: 60
 };
 
-class ExtensionsPlanner extends BasePlanner {
+export class ExtensionsPlanner extends BasePlanner {
     constructor() {
         super(STRUCTURE_EXTENSION, 5, EXTENSION_LIMITS)
     }

@@ -5,9 +5,10 @@ export function runSpawnManager() {
     // 1. Spawn population targets
     /** @type {Record<string, number>} */
     const populationTargets = {
-        harvester: 4,
-        upgrader: 2,
-        builder: 2
+        harvester: 2,
+        upgrader: 0,
+        builder: 1,
+        repairer: 3,
     };
 
     // 2. Count current living creeps for each role
@@ -18,7 +19,7 @@ export function runSpawnManager() {
     }
 
     // 3. Check targets in priority order
-    const rolesInPriority = ['harvester', 'upgrader', 'builder'];
+    const rolesInPriority = ['harvester', 'upgrader', 'builder', 'repairer'];
 
     // 4. Calculate energy budget, no harvesters = use what we have
     const energyBudget = (counts['harvester'] === 0)
@@ -94,6 +95,7 @@ Every body part in Screeps has a fixed energy cost:
 - MOVE: 50 energy
 - CARRY: 50 energy
 - WORK: 100 energy
-- ATTACK: 80 energy (for future reference)HEAL: 250 energy (for future reference)
+- ATTACK: 80 energy (for future reference)
+- HEAL: 250 energy (for future reference)
 
 */

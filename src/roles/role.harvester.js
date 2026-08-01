@@ -1,10 +1,10 @@
-import { resourcePipeline } from '../utils/resourcePipeline ';
+import { resourcePipeline } from '../utils/resourcePipeline';
 import BaseRole from './BaseRole';
 
 /** @type {Record<string,number>} */
-const priority = { [STRUCTURE_SPAWN]: 1, [STRUCTURE_EXTENSION]: 2, [STRUCTURE_TOWER]: 3 };
+const priority = { [STRUCTURE_SPAWN]: 1, [STRUCTURE_EXTENSION]: 2, [STRUCTURE_TOWER]: 3, [STRUCTURE_CONTAINER]: 4 };
 
-class HarvesterRole extends BaseRole {
+export class HarvesterRole extends BaseRole {
 
     constructor() {
         super(
@@ -13,7 +13,7 @@ class HarvesterRole extends BaseRole {
             '⚡'
         );
     }
-    
+
     /**
      * @param {Creep} creep
      */
@@ -22,7 +22,18 @@ class HarvesterRole extends BaseRole {
         if (success) return;
 
         super.onWorkFallback(creep);
-    }    
+    }
+    
+    /**
+     * @returns {import("../utils/resourcePipeline").EnergyFetcher<any>[]}
+     */
+    getGatheringTiers() {
+        return [
+            resourcePipeline.tiers.miner,
+            resourcePipeline.tiers.graveRobber,
+            resourcePipeline.tiers.sweeper,
+        ];
+    }
 };
 
 export default new HarvesterRole();

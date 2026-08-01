@@ -1,7 +1,7 @@
 export const typeCaster = {
     /**
      * Safely casts a generic Owned Structure array to an inventory-capable structure array
-     * @param {AnyOwnedStructure[]} structures 
+     * @param {AnyStructure[]} structures 
      * @returns {AnyStoreStructure[]}
      */
     asStructuresWithStore(structures) {

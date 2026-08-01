@@ -1,8 +1,6 @@
 import BasePlanner from './BasePlanner.js';
 
-
-
-class RoadsPlanner extends BasePlanner {
+export class RoadsPlanner extends BasePlanner {
     constructor() {
         super(STRUCTURE_ROAD, 0, {});
     }

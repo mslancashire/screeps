@@ -12,7 +12,7 @@ const TOWER_LIMITS = {
     8: 6
 };
 
-class TowersPlanner extends BasePlanner {
+export class TowersPlanner extends BasePlanner {
     constructor() {
         super(STRUCTURE_TOWER, 2, TOWER_LIMITS)
     }

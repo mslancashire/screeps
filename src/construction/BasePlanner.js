@@ -12,7 +12,7 @@ export default class BasePlanner {
         this.maxDistance = maxDistance;
         this.limitsMap = limitsMap;
     }
-    
+
     /**
      * Calculates and return potential Layout positions
      * @param {Room} room
@@ -41,14 +41,13 @@ export default class BasePlanner {
     }
 
     /**
-    *  Internal geometry helper
-    * @param {Room} room
-    * @param {RoomPosition} centerPos
-    * @param {number} maxDistance
+    * Internal geometry helper: Finds placements based on a center position in a offset grid.
+    * @param {Room} room The room the positions are to be found in.
+    * @param {RoomPosition} centerPos The centre position.
+    * @param {number} maxDistance I assume this forces the positions to be at least 2 away from the centre position?
     * @returns {RoomPosition | null}
     */
     findValidGridSpot(room, centerPos, maxDistance) {
-        // Outward spread of 5 tiles
         for (let distance = 2; distance <= maxDistance; distance++) {
             for (let dx = -distance; dx <= distance; dx++) {
                 for (let dy = -distance; dy <= distance; dy++) {
@@ -65,21 +64,52 @@ export default class BasePlanner {
                     // ignore walls
                     const terrain = room.getTerrain();
                     if (terrain.get(targetX, targetY) === TERRAIN_MASK_WALL) continue;
-                    
+
                     // ignore structures and construction sites
                     const structures = room.lookForAt(LOOK_STRUCTURES, targetX, targetY);
                     const sites = room.lookForAt(LOOK_CONSTRUCTION_SITES, targetX, targetY);
 
-                    const hasSolidBlocker = structures.some(s => s.structureType !== STRUCTURE_ROAD);
-                    const hasSolidSite = sites.some(s => s.structureType !== STRUCTURE_ROAD);
+                    const blocked = structures.some(s => s.structureType !== STRUCTURE_ROAD)
+                        || sites.some(s => s.structureType !== STRUCTURE_ROAD);
 
-                    if (!hasSolidBlocker && !hasSolidSite) {
+                    if (!blocked) {
                         return new RoomPosition(targetX, targetY, room.name);
                     }
                 }
             }
         }
 
+        return null;
+    }
+
+    /**
+    *  Internal geometry helper: Finds adjacent placements.
+    * @param {Room} room The room the positions are to be found in.
+    * @param {RoomPosition} centerPos The centre position.
+    * @returns {RoomPosition | null}
+    */
+    findAdjacentOpenSpot(room, centerPos) {
+        const terrain = room.getTerrain();
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+
+                if (dx === 0 && dy === 0) continue;
+
+                const x = centerPos.x + dx;
+                const y = centerPos.y + dy;
+                if (x < 2 || x > 47 || y < 2 || y > 47) continue;
+                if (terrain.get(x, y) === TERRAIN_MASK_WALL) continue;
+
+                const structures = room.lookForAt(LOOK_STRUCTURES, x, y);
+                const sites = room.lookForAt(LOOK_CONSTRUCTION_SITES, x, y);
+                const blocked = structures.some(s => s.structureType !== STRUCTURE_ROAD)
+                    || sites.some(s => s.structureType !== STRUCTURE_ROAD);
+
+                if (!blocked) {
+                    return new RoomPosition(x, y, room.name);
+                }
+            }
+        }
         return null;
     }
 }

@@ -1,4 +1,4 @@
-import { resourcePipeline } from "../utils/resourcePipeline ";
+import { resourcePipeline } from "../utils/resourcePipeline";
 
 const refreshIcon = '🔄';
 
@@ -46,7 +46,19 @@ export default class BaseRole {
      * @param {Creep} creep 
      */
     onGatheringState(creep) {
-        resourcePipeline.fetchEnergy(creep);
+        resourcePipeline.fetchEnergy(creep, this.getGatheringTiers());
+    }
+
+    /**
+     * @returns {import("../utils/resourcePipeline").EnergyFetcher<any>[]}
+     */
+    getGatheringTiers() {
+        return [
+            resourcePipeline.tiers.graveRobber,
+            resourcePipeline.tiers.sweeper,
+            resourcePipeline.tiers.miner,
+            resourcePipeline.tiers.collector
+        ];
     }
 
     /**
